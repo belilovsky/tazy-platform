@@ -79,7 +79,7 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://tazy.pro/api}
       NODE_ENV: production
     ports:
-      - "127.0.0.1:8501:3000"
+      - "127.0.0.1:8501:8000"
     depends_on:
       - tazy_api
 
