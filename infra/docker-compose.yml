@@ -1,0 +1,90 @@
+services:
+  tazy_db:
+    image: postgres:16-alpine
+    container_name: tazy_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tazydb}
+      POSTGRES_USER: ${POSTGRES_USER:-tazyuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5482:5432"
+    volumes:
+      - tazy_pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tazyuser} -d ${POSTGRES_DB:-tazydb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tazy_redis:
+    image: redis:7-alpine
+    container_name: tazy_redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6482:6379"
+    volumes:
+      - tazy_redisdata:/data
+
+  tazy_meili:
+    image: getmeili/meilisearch:v1.10
+    container_name: tazy_meili
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+      MEILI_ENV: production
+    ports:
+      - "127.0.0.1:7482:7700"
+    volumes:
+      - tazy_meilidata:/meili_data
+
+  tazy_minio:
+    image: minio/minio:latest
+    container_name: tazy_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:9482:9000"
+      - "127.0.0.1:9483:9001"
+    volumes:
+      - tazy_miniodata:/data
+
+  tazy_api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    container_name: tazy_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      tazy_db:
+        condition: service_healthy
+      tazy_redis:
+        condition: service_started
+    ports:
+      - "127.0.0.1:8502:8000"
+
+  tazy_web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    container_name: tazy_web
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://tazy.pro/api}
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:8501:3000"
+    depends_on:
+      - tazy_api
+
+volumes:
+  tazy_pgdata:
+  tazy_redisdata:
+  tazy_meilidata:
+  tazy_miniodata:
