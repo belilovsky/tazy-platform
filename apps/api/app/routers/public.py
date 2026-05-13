@@ -1,5 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import date
+from ..db import get_db
 
 router = APIRouter()
 
@@ -72,8 +75,15 @@ async def media_projects():
     return {'items': MEDIA_PROJECTS}
 
 @router.get('/stats')
-async def stats():
-    return STATS
+async def stats(db: AsyncSession = Depends(get_db)):
+    try:
+        dogs = (await db.execute(text('SELECT count(*) FROM dogs WHERE public = true'))).scalar() or 0
+        breeders = (await db.execute(text('SELECT count(*) FROM breeders WHERE suspended_at IS NULL'))).scalar() or 0
+        owners = (await db.execute(text('SELECT count(*) FROM owners'))).scalar() or 0
+        pedigrees = (await db.execute(text('SELECT count(*) FROM pedigree_edges'))).scalar() or 0
+        return {'dogs_registered': dogs, 'breeders': breeders, 'owners': owners, 'pedigrees': pedigrees, 'updated_at': date.today().isoformat()}
+    except Exception:
+        return STATS
 
 @router.get('/manifesto')
 async def manifesto():
