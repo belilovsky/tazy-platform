@@ -24,7 +24,7 @@ export default async function Page() {
         <div style={{marginTop:'1rem', display:'flex', gap:'1.5rem', flexWrap:'wrap', fontSize:14, color:'#555'}}>
           <span><b>Запуск:</b> 17 мая 2026</span>
           <span><b>День Тазы:</b> 3 сентября 2026</span>
-          <span><b>Языки:</b> KK / RU / EN</span><span><a href="/dogs" style={{color:'#7a6a3a'}}>Реестр</a></span><span><a href="/breeders" style={{color:'#7a6a3a'}}>Питомники</a></span>
+          <span><b>Языки:</b> KK / RU / EN</span><span><a href="/dogs" style={{color:'#7a6a3a'}}>Реестр</a></span><span><a href="/breeders" style={{color:'#7a6a3a'}}>Питомники</a></span><span><a href="/media" style={{color:'#7a6a3a'}}>Медиа</a></span><span><a href="/day-of-tazy" style={{color:'#7a6a3a'}}>День Тазы</a></span><span><a href="/about" style={{color:'#7a6a3a'}}>О проекте</a></span><span><a href="/search" style={{color:'#7a6a3a'}}>Поиск</a></span>
         </div>
       </header>
 
